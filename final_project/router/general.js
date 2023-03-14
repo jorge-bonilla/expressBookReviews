@@ -12,7 +12,7 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  res.send(JSON.stringify({books},null,20));
+  res.send(JSON.stringify({books},null,4));
 });
 
 // Get book details based on ISBN
@@ -27,17 +27,19 @@ public_users.get('/author/:author',function (req, res) {
     let filtered_books=Object.values(books).filter((book) => book.author === author);
     res.send(filtered_books);
 });
-
+  
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const title = req.params.title;
+    let filtered_books=Object.values(books).filter((book) => book.title === title);
+    res.send(filtered_books);
 });
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const isbn = req.params.isbn;
+    const reviews = books[isbn].reviews;
+    res.send(reviews);
 });
 
 module.exports.general = public_users;
