@@ -21,10 +21,6 @@ const authenticatedUser = (username,password)=>{
     }
 }
 
-regd_users.get('/users',function (req, res) {
-    res.send(JSON.stringify({users},null,4));
-});
-
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   const username = req.query.username;
@@ -36,7 +32,7 @@ regd_users.post("/login", (req,res) => {
 
     if (authenticatedUser(username,password)) {
         let accessToken = jwt.sign({
-          data: password
+          data: username
         }, 'access', { expiresIn: 60 * 60 });
         req.session.authorization = {
           accessToken,username
@@ -52,10 +48,38 @@ regd_users.post("/login", (req,res) => {
 
 });
 
-// Add a book review
-regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+
+regd_users.put("/auth/review/:isbn", (req, res) => { 
+   const username = req.user.data;
+   const review = req.query.review;
+   const isbn = req.params.isbn;
+   let reviews = books[isbn].reviews; 
+
+   let filtered_reviews= reviews.filter((review) => review.username === username);
+   if(filtered_reviews.length>0){
+        let filtered_review = filtered_reviews[0];
+        filtered_review.review=review;
+        reviews = reviews.filter((review) => review.username != username);
+        reviews.push(filtered_review);
+   } else {
+        books[isbn].reviews.push({"username" : username ,"review" : review});
+   }
+
+  return res.send( reviews);
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+   const username = req.user.data;
+   const isbn = req.params.isbn;
+   let reviews = books[isbn].reviews; 
+
+   let filtered_reviews= reviews.filter((review) => review.username === username);
+   if(filtered_reviews.length>0){
+        reviews = reviews.filter((review) => review.username != username);
+   } 
+
+   return res.send( reviews);
+
 });
 
 module.exports.authenticated = regd_users;
